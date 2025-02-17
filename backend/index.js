@@ -26,54 +26,66 @@ mongoose
     console.log("MongoDB connection error:", err);
   });
 
-//sign up route
-app.post("/register", (req, res) => {
-  const { username, email, password } = req.body;
+app.post("/api/register", async (req, res) => {
+  try {
+    const { username, email, password } = req.body
+    
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "all field is required." })
+      
 
-  // Hash the password before saving to MongoDB
-  bcrypt.hash(password, 10, (err, hashedpassword) => {
-    if (err) {
-      return res.status(500).json({ error: "error hashing password" });
     }
-    const newuser = new User({
-      username,
-      email,
-      password: hashedpassword,
-    });
+    //check if the user already exists
+    const existingUser = await User.findOne({ email })
+    
+    if (existingUser) {
+      return res.status(400).json({ message: "email all already use." })
+      
 
-    newuser
-      .save()
-      .then(() =>
-        res.status(201).json({ message: "user registered succesfully" })
-      )
-      .catch((err) => res.status(500).json({ error: "error registing" }));
-  });
-});
+    }
+    //hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-// Login Route - Login with existing user
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
+    // create new user
+    const newUser = new User({ username, email, password: hashedPassword })
+    await newUser.save()
+   
+    res.status(201).json({ message: "User registered successfully." })
+    
+  } catch (error) {
+    res.status(500).json({message: "server error. please try again later."})
+  }
+})
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  // Find user by email
-  User.findOne({ email })
-    .then((user) => {
-      if (!user) return res.status(404).json({ error: "User not found!" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "all field is required." });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "user not found! " });
+    }
 
-      // Compare password with the stored hashed password
-      bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err)
-          return res.status(500).json({ error: "Error comparing passwords" });
+    // Compare password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (isMatch) {
+      return res.status(200).json({ message: "login successful!" })
+    }
+    else {
+      return res.status(400).json({message: "invalid credentiats!"})
+    }
 
-        if (isMatch) {
-          // Here, you would typically generate a JWT and send it back
-          res.status(200).json({ message: "Login successful!" });
-        } else {
-          res.status(400).json({ error: "Invalid credentials!" });
-        }
-      });
-    })
-    .catch((err) => res.status(500).json({ err: "Error finding user" }));
-});
+    
+  } catch (error) {
+    res.status(500).json({message: "server error. please try again later."})
+  }
+})
+
+
+
+
 //run express server on port 5000
 
 app.listen(5000, () => {
