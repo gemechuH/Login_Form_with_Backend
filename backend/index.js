@@ -23,7 +23,7 @@ mongoose
     console.log("mongodb connected...");
   })
   .catch((err) => {
-    console.log("❌ MongoDB connection error:", err);
+    console.log("MongoDB connection error:", err);
   });
 
 //sign up route
