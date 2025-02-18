@@ -50,7 +50,11 @@ app.post("/api/register", async (req, res) => {
     const newUser = new User({ username, email, password: hashedPassword })
     await newUser.save()
    
-    res.status(201).json({ message: "User registered successfully." })
+    res.status(201).json({
+      message: "User registered successfully.",
+      username: newUser.username,
+    });
+    
     
   } catch (error) {
     res.status(500).json({message: "server error. please try again later."})
@@ -71,7 +75,13 @@ app.post("/api/login", async (req, res) => {
     // Compare password with the stored hashed password
     const isMatch = await bcrypt.compare(password, user.password)
     if (isMatch) {
-      return res.status(200).json({ message: "login successful!" })
+      return res.status(200).json({
+        message: "login successful!",
+        username: user.username,
+        
+
+      })
+      
     }
     else {
       return res.status(400).json({message: "invalid credentiats!"})
