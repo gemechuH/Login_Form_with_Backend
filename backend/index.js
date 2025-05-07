@@ -2,102 +2,122 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 
 const app = express();
+
+// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow frontend requests
+    credentials: true,
+  })
+);
 
-const PORT = process.env.PORT || 5000
-const MONGO_URL = process.env.MONGO_URL
+const PORT = process.env.PORT || 5000;
+const MONGO_URL = process.env.MONGO_URL;
 
-//connect to mongooDB
-
-
-
+// MongoDB Connection with better error handling
 mongoose
-  .connect(MONGO_URL)
+  .connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
-    console.log("mongodb connected...");
+    console.log("MongoDB connected successfully");
+    // Only start the server after DB connection is established
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
-    console.log("MongoDB connection error:", err);
+    console.error("MongoDB connection error:", err);
+    process.exit(1); // Exit process with failure
   });
 
+// API Health Check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "Server is running" });
+});
+
+// Registration endpoint with improved validation
 app.post("/api/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body
-    
+    const { username, email, password } = req.body;
+
+    // Enhanced validation
     if (!username || !email || !password) {
-      return res.status(400).json({ message: "all field is required." })
-      
-
+      return res.status(400).json({ message: "All fields are required." });
     }
-    //check if the user already exists
-    const existingUser = await User.findOne({ email })
-    
+
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long." });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "email all already use." })
-      
-
+      return res.status(400).json({ message: "Email is already in use." });
     }
-    //hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10)
 
-    // create new user
-    const newUser = new User({ username, email, password: hashedPassword })
-    await newUser.save()
-   
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
     res.status(201).json({
-      message: "User registered successfully.",
+      message: "User registered successfully",
       username: newUser.username,
     });
-    
-    
   } catch (error) {
-    res.status(500).json({message: "server error. please try again later."})
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
-})
+});
+
+// Login endpoint with improved error handling
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "all field is required." });
+      return res.status(400).json({ message: "All fields are required." });
     }
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "user not found! " });
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    // Compare password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (isMatch) {
-      return res.status(200).json({
-        message: "login successful!",
-        username: user.username,
-        
-
-      })
-      
-    }
-    else {
-      return res.status(400).json({message: "invalid credentiats!"})
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    
+    res.status(200).json({
+      message: "Login successful",
+      username: user.username,
+    });
   } catch (error) {
-    res.status(500).json({message: "server error. please try again later."})
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
-})
+});
 
-
-
-
-//run express server on port 5000
-
-app.listen(5000, () => {
-  console.log("server running on port 5000");
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });

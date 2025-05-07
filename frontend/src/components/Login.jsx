@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import BASE_URL from '../baseUrl';
+
 
 
 
@@ -7,7 +9,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +21,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch(`${BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -28,7 +30,7 @@ const Login = () => {
       console.log(data);
       if (response.ok) {
         // alert("login successful!.");
-        localStorage.setItem("username", data.username)
+        localStorage.setItem("username", data.username);
         navigate("/dashboard");
       } else {
         setError(data.message || "login failed.");
@@ -39,56 +41,60 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center mb-4 text-red-500 p-2 rounded">
-          Login
+    <div className="flex min-h-screen items-center justify-center bg-green-50">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg border-t-4 border-green-600">
+        <div className="flex justify-center mb-6">
+          <img
+            src="https://media.istockphoto.com/id/998124024/photo/back-to-school-colorful-text.jpg?s=2048x2048&w=is&k=20&c=YXZL7-2_imFXBmi5NNQlhmRUN4lBcBggQO3nL62MfI4="
+            alt="Ethio Parent School"
+            className="h-20 w-auto"
+          />
+        </div>
+        <h2 className="text-3xl font-bold text-center mb-6 text-green-700">
+          Ethio Parent School Login
         </h2>
-        {error && <p className="text-red-500">{error}</p>}
-        <form action="" className="space-y-4" onSubmit={handleSubmit}>
+        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
+            <label className="block text-gray-700 font-semibold mb-2">
+              Email Address
             </label>
             <input
               type="email"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 p-2 w-full border rounded-md outline"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label className="block text-gray-700 font-semibold mb-2">
               Password
             </label>
             <input
               type="password"
-              className="mt-1 p-2 w-full border rounded-lg"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           <button
             type="submit"
-            className="w-60 text-center ml-20 bg-blue-500 text-white py-2 px-4 rounded hover:bg-red-400"
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300"
           >
             Login
           </button>
         </form>
-        <p className="mt-4 text-gray-600">
-          Already Have an account?
+        <p className="mt-6 text-center text-gray-600">
+          Don't have an account?{" "}
           <a
             href="/register"
-            className="text-red-400 font-semibold hover:text-red-600"
+            className="text-green-600 font-bold hover:text-green-700"
           >
-            Register Now
+            Register here
           </a>
         </p>
       </div>
@@ -96,4 +102,4 @@ const Login = () => {
   );
 };
 
-export default Login
+export default Login;
