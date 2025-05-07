@@ -19,11 +19,18 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/register`, {
-        method: "POST",
-        headers: { "content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const response = await fetch(
+        "https://ethio-parent-school-backend.vercel.app/api/register",
+        {
+          method: "POST",
+          headers: {
+            "content-Type": "application/json",
+            Accept: "application/json",
+          },
+          mode: "cors",
+          body: JSON.stringify({ username, email, password }),
+        }
+      );
       const data = await response.json();
 
       if (response.ok) {
