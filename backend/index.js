@@ -11,38 +11,29 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow frontend requests
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
     credentials: true,
+    allowedHeaders: ["Content-Type"],
   })
 );
 
-const PORT = process.env.PORT || 5000;
-const MONGO_URL = process.env.MONGO_URL;
-
-// MongoDB Connection with better error handling
+// MongoDB Connection
 mongoose
-  .connect(MONGO_URL, {
+  .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
     console.log("MongoDB connected successfully");
-    // Only start the server after DB connection is established
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
-    process.exit(1); // Exit process with failure
   });
+ app.get("/", (req, res) => {
+   res.json({ message: "Welcome to Ethio Parent School API" });
+ });
 
-// API Health Check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "Server is running" });
-});
-
-// Registration endpoint with improved validation
 app.post("/api/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -53,9 +44,9 @@ app.post("/api/register", async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters long." });
+      return res.status(400).json({
+        message: "Password must be at least 6 characters long.",
+      });
     }
 
     // Email format validation
@@ -86,8 +77,6 @@ app.post("/api/register", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-// Login endpoint with improved error handling
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -116,8 +105,20 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Global error handler
+
+// Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err);
   res.status(500).json({ message: "Something went wrong!" });
 });
+
+// For Vercel, we need to export the app
+module.exports = app;
+
+// Only listen to port if not in Vercel
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
