@@ -6,21 +6,29 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 
 const app = express();
+const allowedOrigins = [
+  "http://localhost:5173", // for development
+  "https://ethio-parent-school.vercel.app/", // for production
+];
+ 
 
 // Middleware
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://ethio-parent-school.vercel.app",
-      "https://ethio-parent-school-backend.vercel.app",
-    ],
-    methods: ["GET", "POST", "OPTIONS"],
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // if you're using cookies or sessions
   })
 );
+
 
 // MongoDB Connection
 mongoose

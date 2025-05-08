@@ -1,13 +1,3 @@
-const BASE_URL = import.meta.env.PROD
-  ? "https://ethio-parent-school-backend.vercel.app"
-  : "http://localhost:5000";
-
-export const fetchConfig = {
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-  mode: "cors",
+export const BASE_URL = () => {
+  return "https://ethio-parent-school-backend.vercel.app";
 };
-
-export default BASE_URL;
