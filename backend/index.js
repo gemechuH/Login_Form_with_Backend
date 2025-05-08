@@ -118,10 +118,19 @@ app.post("/api/login", async (req, res) => {
 });
 app.get("/api/test-db", async (req, res) => {
   try {
-    await mongoose.connection.db.admin().ping();
+    const connectionState = mongoose.connection.readyState;
+    console.log("MongoDB connection state:", connectionState);
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (connectionState !== 1) {
+      return res.status(500).json({
+        message: "MongoDB is not connected",
+        connectionState,
+      });
+    }
+    await mongoose.connection.db.collection("users").findOne({});
     res.status(200).json({ message: "MongoDB connection successful" });
   } catch (error) {
-    console.error("DB test error:", error);
+    console.error("DB test error:", error.message, error.stack);
     res
       .status(500)
       .json({ message: "MongoDB connection failed", error: error.message });
