@@ -8,7 +8,7 @@ const User = require("./models/User");
 const app = express();
 const allowedOrigins = [
   "http://localhost:5173", // for development
-  "https://ethio-parent-school.vercel.app/", // for production
+  "https://ethio-parent-school.vercel.app", // for production
 ];
  
 
@@ -116,6 +116,17 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+app.get("/api/test-db", async (req, res) => {
+  try {
+    await mongoose.connection.db.admin().ping();
+    res.status(200).json({ message: "MongoDB connection successful" });
+  } catch (error) {
+    console.error("DB test error:", error);
+    res
+      .status(500)
+      .json({ message: "MongoDB connection failed", error: error.message });
+  }
+});
 
 
 // Error handler
@@ -129,7 +140,8 @@ module.exports = app;
 
 // Only listen to port if not in Vercel
 if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 5000;
+  const PORT =
+    process.env.PORT || "https://ethio-parent-school-backend.vercel.app";
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
