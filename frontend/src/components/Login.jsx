@@ -58,7 +58,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
-              Email Address
+              Email Address of your school
             </label>
             <input
               type="email"
@@ -70,11 +70,11 @@ const Login = () => {
           </div>
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
-              Password
+              Password given at school
             </label>
             <input
               type="password"
-              placeholder="Enter your password"
+              placeholder="Enter your password correct one only"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -89,7 +89,7 @@ const Login = () => {
           </button>
         </form>
         <p className="mt-6 text-center text-gray-600">
-          Don't have an account?{" "}
+          Don't have an account or your existing student?{" "}
           <a
             href="/register"
             className="text-green-600 font-bold hover:text-green-700"
