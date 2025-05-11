@@ -69,11 +69,11 @@ const Register = () => {
           </div>
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
-              Email Address
+              school email address for student only
             </label>
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder="Enter your school email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -96,7 +96,7 @@ const Register = () => {
           </button>
         </form>
         <p className="mt-6 text-center text-gray-600">
-          Already have an account?{" "}
+          Already have an account or i am existing student?{" "}
           <a href="/" className="text-green-600 font-bold hover:text-green-700">
             Login here
           </a>
